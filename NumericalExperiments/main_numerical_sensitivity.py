@@ -59,8 +59,9 @@ def main():
         x_train, t_train, x_test, t_test = load_dataset(dataset)
         dim = x_train.shape[1]
 
-        perm = np.random.permutation(len(x_train))
-        x_train_de = x_train[perm[:num_de_data]]
+        x_train_de = x_train[t_train==0]
+        perm = np.random.permutation(len(x_train_de))
+        x_train_de = x_train_de[perm[:num_de_data]]
 
         x_train_nu = x_train[t_train==1]
         perm = np.random.permutation(len(x_train_nu))
@@ -76,6 +77,7 @@ def main():
         temp_t_test[t_test==1] = 1
         temp_t_test[t_test!=1] = 0
         t_test = temp_t_test
+        assert (t_test == 1).all()
 
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

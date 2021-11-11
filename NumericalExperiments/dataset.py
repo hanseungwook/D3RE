@@ -158,8 +158,8 @@ def load_dataset(dataset_name):
 
         p_samples_test = p_dist.rvs(size=500)
 
-        ones = np.ones(10000)
-        zeros = np.zeros(10000)
+        ones = np.ones(100000)
+        zeros = np.zeros(100000)
 
         trainX = np.concatenate((p_samples_train, q_samples_train), axis=0)
         trainY = np.concatenate((ones, zeros), axis=0)
