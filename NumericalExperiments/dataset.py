@@ -166,7 +166,7 @@ def load_dataset(dataset_name):
 
         # Only p samples in test dataset
         testX = p_samples_test
-        testY = np.copy(ones)
+        testY = np.copy(ones)[:len(testX)]
         
     else:
         raise ValueError("dataset name {} is unknown.".format(dataset_name))
