@@ -139,8 +139,14 @@ def main():
         mean_dr_nnulsif_50[i] = mean_nnulsif_50
         mean_logdr_nnulsif_50[i] = mean_lognnulsif_50
 
-        print(test_nnpu_20[-1])
-        print(test_nnulsif_20[-1])
+        # print(test_nnpu_20[-1])
+        # print(test_nnulsif_20[-1])
+        print(mean_logdr_nnpu_15[-1])
+        print(mean_logdr_nnpu_20[-1])
+        print(mean_logdr_nnpu_50[-1])
+        print(mean_logdr_nnulsif_15[-1])
+        print(mean_logdr_nnulsif_20[-1])
+        print(mean_logdr_nnulsif_50[-1])
 
         seed += 1
 
