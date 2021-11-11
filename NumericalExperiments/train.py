@@ -16,6 +16,7 @@ def train(x_train, t_train, x_test, t_test, epoch, model, optimizer, device, bat
     test_loss_list = []
     auc_list = []
     mean_dr_list = []
+    mean_logdr_list = []
 
     for ep in range(1, epoch+1):
         train_loss_step = 0
@@ -61,10 +62,11 @@ def train(x_train, t_train, x_test, t_test, epoch, model, optimizer, device, bat
 
         train_loss_list.append(train_loss_step)       
 
-        test_loss, auc, mean_dr = test(x_test, t_test, model, device, batchsize=batchsize, method=method, upper_bound=1.5)
+        test_loss, auc, mean_dr, mean_logdr = test(x_test, t_test, model, device, batchsize=batchsize, method=method, upper_bound=1.5)
         test_loss_list.append(test_loss)
         auc_list.append(auc)
         mean_dr_list.append(mean_dr)
+        mean_logdr_list.append(mean_logdr)
 
         if ep%50 == 0:
             print('epoch', ep)
@@ -74,12 +76,15 @@ def train(x_train, t_train, x_test, t_test, epoch, model, optimizer, device, bat
             print("running test loss", test_loss)
             print("auc", auc)
             print("mean dr", mean_dr)
+            print("mean_logdr", mean_logdr)
 
     train_loss_list = np.array(train_loss_list)
     test_loss_list = np.array(test_loss_list)
     auc_list = np.array(auc_list)
     mean_dr_list = np.array(mean_dr_list)
-    return train_loss_list, test_loss_list, auc_list, mean_dr_list
+    mean_logdr_list = np.array(mean_logdr_list)
+    
+    return train_loss_list, test_loss_list, auc_list, mean_dr_list, mean_logdr_list
 
 def test(xt, tt, model, device, batchsize=100, method='nnPU', upper_bound=1.5):
     f = np.array([])
@@ -123,9 +128,10 @@ def test(xt, tt, model, device, batchsize=100, method='nnPU', upper_bound=1.5):
 
         auc = metrics.auc(fpr, tpr)
 
+    mean_logdr = np.mean(np.log(f))
     mean_dr = np.mean(f)
 
-    return loss, auc, mean_dr
+    return loss, auc, mean_dr, mean_logdr
 
 def sigmoid_func(output):
     return 1/(1+torch.exp(-output))

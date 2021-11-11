@@ -4,6 +4,8 @@ import os
 import tarfile
 import pickle
 from sklearn.datasets import fetch_openml
+from scipy.stats import multivariate_normal
+from scipy.linalg import block_diag
 
 def get_mnist():
     mnist = fetch_openml('mnist_784', data_home=".")
@@ -146,6 +148,26 @@ def load_dataset(dataset_name):
     elif dataset_name == "cifar10":
         (trainX, trainY), (testX, testY) = get_cifar10()
         trainY, testY = binarize_cifar10_class(trainY, testY)
+    elif dataset_name == "synthetic":
+        mu_p, mu_q, scale_p, scale_q = create_syndata_params(means=[-1, 1], dim=40, mi=100)
+        p_dist = multivariate_normal(mean=mu_p, cov=scale_p)
+        q_dist = multivariate_normal(mean=mu_q, cov=scale_q)
+
+        p_samples_train = p_dist.rvs(size=100000)
+        q_samples_train = q_dist.rvs(size=100000)
+
+        p_samples_test = p_dist.rvs(size=500)
+
+        ones = np.ones(10000)
+        zeros = np.zeros(10000)
+
+        trainX = np.concatenate((p_samples_train, q_samples_train), axis=0)
+        trainY = np.concatenate((ones, zeros), axis=0)
+
+        # Only p samples in test dataset
+        testX = p_samples_test
+        testY = np.copy(ones)
+        
     else:
         raise ValueError("dataset name {} is unknown.".format(dataset_name))
 
@@ -154,3 +176,20 @@ def load_dataset(dataset_name):
     #print(trainX.shape)
     #print(testX.shape)
     return trainX, trainY, testX, testY
+
+def create_syndata_params(means=[-1, 1], dim=40, mi=100):
+    mu_1=means[0]+np.zeros((dim), dtype="float32")
+    mu_2=means[1]+np.zeros((dim), dtype="float32")
+
+    rho = get_rho_from_mi(mi, dim)  # correlation coefficient
+
+    scale_p = block_diag(*[[[1, rho], [rho, 1]] for _ in range(dim // 2)])
+    scale_p = np.float32(scale_p)
+    scale_q = np.ones(dim, dtype="float32")
+
+    return mu_1, mu_2, scale_p, scale_q
+
+def get_rho_from_mi(mi, n_dims):
+    """Get correlation coefficient from true mutual information"""
+    x = (4 * mi) / n_dims
+    return (1 - np.exp(-x)) ** 0.5  # correlation coefficient
